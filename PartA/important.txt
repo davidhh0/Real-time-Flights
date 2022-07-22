@@ -1,0 +1,7 @@
+Docker was created using command:
+
+docker pull mysql
+sudo docker run --name project-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password -d mysql
+
+sudo docker ps
+sudo docker start/stop containerid
