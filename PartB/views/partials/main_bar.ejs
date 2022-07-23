@@ -1,0 +1,77 @@
+<!-- index.html -->
+
+<html>
+
+<head>
+
+
+
+<body>
+  <nav 
+   style="display:flex; justify-content:center;align-items:center; width: 100%;max-width: 100%; margin: 20px auto">
+
+
+    <a class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:85px;
+           border: 1.5px solid black; border-radius: 8px;
+            background: lightblue;display: flex; justify-content: center; align-items: center;" href="javascript:;">
+      <div class="navbar-brand" style="position: relative; left: 30px;top: -10px; font-size: 20px;color: black;">
+        טיסות ממתינות לנחיתה
+      </div>
+      <strong style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
+        15
+      </strong>
+    </a>
+    <div style="width:30px"></div>
+    <a class="navbar-wrapper" style="position: relative; width:32%;max-width: 300px;height:85px;
+           border: 1.5px solid black; border-radius: 8px;
+            background: lightblue;display: flex; justify-content: center; align-items: center;" href="javascript:;">
+      <div class="navbar-brand" style="position: relative; left: 30px;top: -10px; font-size: 20px;color: black;">טיסות
+        ממתינות להמראה
+      </div>
+      <strong style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
+        15
+      </strong>
+    </a>
+
+    <div style="width:30px"></div>
+
+    <a  class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:85px;
+           border: 1.5px solid black; border-radius: 8px;
+            background: lightblue;display: flex; justify-content: center; align-items: center;" href="javascript:;">
+      <div class="navbar-brand" style="position: relative; left: 30px;top: -10px; font-size: 20px;color: black;">טיסות
+        ממתינות להמראה
+      </div>
+      <div id="BGU_temp" class="bar-chart secondary" data-total="42" animated style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
+        
+      </div>
+      <script >
+    
+        console.log("fuck");
+        let lat = 32.321457;
+        let lng = 34.853195;
+        document.getElementById("BGU_temp").innerText = lat;
+        const config_weather = {
+          method: 'get',
+          url: 'https://api.openweathermap.org/data/2.5/weather?appid=15fb5ab1185d5953f6ce301bf8ea131b&units=metric&lat=' + lat + '&lon=' + lng,
+          responseType: 'json'
+        }
+        console.log();
+      //   fetch('https://api.openweathermap.org/data/2.5/weather?appid=15fb5ab1185d5953f6ce301bf8ea131b&units=metric&lat=' + lat + '&lon=' + lng)
+      // .then((response) => {
+      //   return response.json();
+      // })
+      // .then((myJson) => {
+      //   var code = myJson.cod;
+          
+      //   console.log(myJson.cod);
+      // });
+        
+      </script>
+     
+    </a>
+
+  </nav>
+</body>
+</head>
+
+</html>
