@@ -1,3 +1,9 @@
 on linux install: libsasl2-dev, libsasl2-modules, libssl-dev, librdkafka-dev
 
 node-rdkafka
+
+nodemon
+mongodb
+bigml
+fs
+fast-csv
