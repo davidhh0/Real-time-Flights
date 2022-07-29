@@ -1,0 +1,5 @@
+docker pull mongo
+sudo docker run --name project-mongo -p 27017:27017 -d mongo
+
+sudo docker ps
+sudo docker start/stop containerid

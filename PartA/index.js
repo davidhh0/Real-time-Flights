@@ -1,5 +1,44 @@
 const axios = require('axios');
+const Kafka = require("node-rdkafka");
 const mysql = require('mysql');
+
+//------------------------------------------------
+
+const kafkaConf = {
+  "group.id": "cloudkarafka-project",
+  "metadata.broker.list": "rocket-01.srvs.cloudkafka.com:9094,rocket-02.srvs.cloudkafka.com:9094,rocket-03.srvs.cloudkafka.com:9094".split(","),
+  "socket.keepalive.enable": true,
+  "security.protocol": "SASL_SSL",
+  "sasl.mechanisms": "SCRAM-SHA-256",
+  "sasl.username": "el6ggtvk",
+  "sasl.password": "nIztyaDYg7QPIgvGpRz_01YPjv9dq1As",
+  "debug": "generic,broker,security"
+};
+
+const prefix = "el6ggtvk-";
+
+const topic = `${prefix}sqltomongo`;
+const producer = new Kafka.Producer(kafkaConf);
+
+
+producer.on("ready", function(arg) {
+  console.log(`producer ${arg.name} ready.`);
+});
+
+producer.on("disconnected", function(arg) {
+  process.exit();
+});
+
+producer.on('event.error', function(err) {
+  console.error(err);
+  process.exit(1);
+});
+producer.on('event.log', function(log) {
+//   console.log(log);
+});
+producer.connect();
+
+//------------------------------------------------
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -13,6 +52,7 @@ con.connect(function(err) {
   console.log("Connected!");
 });
 
+//------------------------------------------------
 
 function sleep(millis) {
   return new Promise(resolve => setTimeout(resolve, millis));
@@ -93,12 +133,13 @@ function millisToMinutes(millis) {
 }
 
 async function savetosql(flight){
-    var sql = `INSERT INTO flights (flightkey, id, lat, lng, orientaion, alt, speed, squ, stat, planetype, planeid, updatetime, fromport, toport, num, isground, vspeed, sign, airlinecode, airlinename, ori_country, ori_city, ori_offset, ori_lat, ori_lng, ori_weather, des_country, des_city, des_offset, des_lat, des_lng, des_weather, distanceinkm, scheduled_dep, scheduled_arr, real_dep, real_arr, estimated_dep, estimated_arr, minuteslate, period, dayofweek, mounth) VALUES ("${flight.flightkey}", "${flight.id}", "${flight.lat}", "${flight.lng}", "${flight.orientaion}", "${flight.alt}", "${flight.speed}", "${flight.squ}", "${flight.stat}", "${flight.planetype}", "${flight.planeid}", "${flight.updatetime}", "${flight.fromport}", "${flight.toport}", "${flight.num}", "${flight.isground}", "${flight.vspeed}", "${flight.sign}", "${flight.airlinecode}", "${flight.airlinename}", "${flight.ori_country}", "${flight.ori_city}", ${(flight.ori_offset != null) ? flight.ori_offset : null}, ${(flight.ori_lat != null) ? flight.ori_lat : null}, ${(flight.ori_lng != null) ? flight.ori_lng : null}, ${(flight.ori_weather != null) ? flight.ori_weather : null}, "${flight.des_country}", "${flight.des_city}", ${(flight.des_offset != null) ? flight.des_offset : null}, ${(flight.des_lat != null) ? flight.des_lat : null}, ${(flight.des_lng != null) ? flight.des_lng : null}, ${(flight.des_weather != null) ? flight.des_weather : null}, ${(!isNaN(flight.distanceinkm)) ? flight.distanceinkm : null}, ${(flight.scheduled_dep != null) ? flight.scheduled_dep : null}, ${(flight.scheduled_arr != null) ? flight.scheduled_arr : null}, ${(flight.real_dep != null) ? flight.real_dep : null}, ${(flight.real_arr != null) ? flight.real_arr : null}, ${(flight.estimated_dep != null) ? flight.estimated_dep : null}, ${(flight.estimated_arr != null) ? flight.estimated_arr : null}, ${(flight.minuteslate != null) ? flight.minuteslate : null}, "${flight.period}", "${flight.dayofweek}", "${flight.mounth}")`;
+    var sql = `INSERT INTO flights (flightkey, id, lat, lng, orientaion, alt, speed, squ, stat, planetype, planeid, updatetime, fromport, toport, num, isground, vspeed, sign, airlinecode, airlinename, ori_country, ori_city, ori_offset, ori_lat, ori_lng, ori_weather, des_country, des_city, des_offset, des_lat, des_lng, des_weather, distanceinkm, scheduled_dep, scheduled_arr, real_dep, real_arr, estimated_dep, estimated_arr, minuteslate, period, dayofweek, month) VALUES ("${flight.flightkey}", "${flight.id}", "${flight.lat}", "${flight.lng}", "${flight.orientaion}", "${flight.alt}", "${flight.speed}", "${flight.squ}", "${flight.stat}", "${flight.planetype}", "${flight.planeid}", "${flight.updatetime}", "${flight.fromport}", "${flight.toport}", "${flight.num}", "${flight.isground}", "${flight.vspeed}", "${flight.sign}", "${flight.airlinecode}", "${flight.airlinename}", "${flight.ori_country}", "${flight.ori_city}", ${(flight.ori_offset != null) ? flight.ori_offset : null}, ${(flight.ori_lat != null) ? flight.ori_lat : null}, ${(flight.ori_lng != null) ? flight.ori_lng : null}, ${(flight.ori_weather != null) ? flight.ori_weather : null}, "${flight.des_country}", "${flight.des_city}", ${(flight.des_offset != null) ? flight.des_offset : null}, ${(flight.des_lat != null) ? flight.des_lat : null}, ${(flight.des_lng != null) ? flight.des_lng : null}, ${(flight.des_weather != null) ? flight.des_weather : null}, ${(!isNaN(flight.distanceinkm)) ? flight.distanceinkm : null}, ${(flight.scheduled_dep != null) ? flight.scheduled_dep : null}, ${(flight.scheduled_arr != null) ? flight.scheduled_arr : null}, ${(flight.real_dep != null) ? flight.real_dep : null}, ${(flight.real_arr != null) ? flight.real_arr : null}, ${(flight.estimated_dep != null) ? flight.estimated_dep : null}, ${(flight.estimated_arr != null) ? flight.estimated_arr : null}, ${(flight.minuteslate != null) ? flight.minuteslate : null}, "${flight.period}", "${flight.dayofweek}", "${flight.month}")`;
     con.query(sql);
 }
 
 
 async function main() {
+  await sleep(1500);
   while(true){
     const DATE = await getTime();
     weatherDic = {};
@@ -188,10 +229,11 @@ async function main() {
 
         flight.period = DATE[0];
         flight.dayofweek = DATE[1];
-        flight.mounth = DATE[2];
+        flight.month = DATE[2];
 
         // console.log(flight);
         await savetosql(flight);
+        await producer.produce(topic, -1, Buffer.from(JSON.stringify(flight)), flight.num);
       }
     }
 
