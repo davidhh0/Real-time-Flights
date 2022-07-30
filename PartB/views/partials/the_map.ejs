@@ -6,31 +6,65 @@
     <meta charset="utf-8" />
     <script type='text/javascript' src='http://www.bing.com/api/maps/mapcontrol?callback=GetMap' async defer></script>
     <script type='text/javascript'>
+        function pushpinClicked(e) {
+            console.log(e);
+            console.log();
+            //Make sure the infobox has metadata to display.
+            console.log("im here")
+            //Set the infobox options with the metadata of the pushpin.
+            infobox.setOptions({
+                location: e.target.getLocation(),
+                title: e.target.metadata.title,
+                description: e.target.metadata.description,
+                visible: true
+            });
+
+        }
         function GetMap() {
             var map = new Microsoft.Maps.Map('#myMap', {
-                credentials: 'As4jqrkoyeQcRTOqIBiQgui2O7xH5QO_Xahh37r63HnpJLdPRNq3kqmYwmYnbZJQ'
+                credentials: 'AmGGEcxxukm2TTJsvwQr2bBybgLf69ARx-ZLlE9QyJIlfqVd-STwIkjSpBt5fZq6'
             });
-            var lon = 34.853195;
-            var lat = 32.321457;
-            var loc = new Microsoft.Maps.Location(lat, lon);
+            infobox = new Microsoft.Maps.Infobox( {
+                visible: false
+            });
+            infobox.setMap(map);
+            fetch('http://localhost:3000/landing')
+                .then((response) => {
+                    return response;
+                })
+                .then((myJson) => {
+                    var code = myJson.json();
+                    code.then(value => {
+                        //console.log(value);
+                        for (let i = 0; i < value.length; i++) {
+                            var obj = value[i];
+                            var loc = new Microsoft.Maps.Location(obj['lat'], obj['lng']);
 
-            p1 = {
-                x: lat,
-                y: lon
-            };
-            p2 = {
-                x: 35.095192,
-                y: 33.203430
-            };
-            let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
-            
-            createRotatedImagePushpin(map.getCenter(), 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pin) {
-                map.entities.push(pin);
-            });
-            //listener();
+                            p2 = {
+                                x: 32.0068,
+                                y: 34.8853
+                            };
+                            //!! p2 is the destination !!
+                            p1 = {
+                                x: obj['lat'],
+                                y: obj['lng']
+                            };
+                            let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+                            var pushpin = new Microsoft.Maps.Pushpin(loc);
+                            createRotatedImagePushpin(obj['num'],loc, 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pushpin) {
+                                Microsoft.Maps.Events.addHandler(pushpin, 'click', pushpinClicked);
+                                map.entities.push(pushpin);
+                            });
+
+                        }
+
+                    }
+                    )
+                });
+
         }
 
-        function createRotatedImagePushpin(location, url, rotationAngle, callback) {
+        function createRotatedImagePushpin(flightnum,location, url, rotationAngle, callback) {
             var img = new Image();
             img.onload = function () {
                 var c = document.createElement('canvas');
@@ -52,7 +86,13 @@
                     //Generate a base64 image URL from the canvas.
                     icon: c.toDataURL(),
                     anchor: new Microsoft.Maps.Point(c.width / 2, c.height / 2) //Anchor to center of image.
+
                 });
+                pin.metadata = {
+                    title: 'BLah blah',
+                    description: flightnum
+                };
+
 
                 if (callback) {
                     callback(pin);
@@ -75,7 +115,7 @@
 </head>
 
 <body>
-    <div id="myMap" style="max-width:100%;height:600px;
+    <div id="myMap" style="max-width:100%;height:100%;
     border: 3px solid black;"></div>
 </body>
 

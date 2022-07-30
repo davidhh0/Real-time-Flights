@@ -7,46 +7,112 @@
 
 
 <body>
-  <nav 
-   style="display:flex; justify-content:center;align-items:center; width: 100%;max-width: 100%; margin: 20px auto">
+  <nav
+    style="display:flex; justify-content:center;align-items:center; height: 10vh;width: 100%;max-width: 100%; margin: 20px auto">
 
 
-    <a class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:85px;
+    <div id="flight-lands" class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:100%;
            border: 1.5px solid black; border-radius: 8px;
-            background: lightblue;display: flex; justify-content: center; align-items: center;" href="javascript:;">
-      <div class="navbar-brand" style="position: relative; left: 30px;top: -10px; font-size: 20px;color: black;">
-        טיסות ממתינות לנחיתה
+            background: lightblue;display: flex; justify-content: center; align-items: center;cursor:pointer;">
+      <div
+        style="position: absolute; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; align-items: center;">
+        <div style="position: relative; font-size: 20px;color: black;">
+          טיסות ממתינות לנחיתה
+        </div>
+        <strong id="numbe-of-landing" style="position: relative; font-size: 25px;color: black;">
+          -
+        </strong>
       </div>
-      <strong style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
-        15
-      </strong>
-    </a>
+    </div>
     <div style="width:30px"></div>
-    <a class="navbar-wrapper" style="position: relative; width:32%;max-width: 300px;height:85px;
+    <a class="navbar-wrapper" style="position: relative; width:32%;max-width: 300px;height:100%;
            border: 1.5px solid black; border-radius: 8px;
             background: lightblue;display: flex; justify-content: center; align-items: center;" href="javascript:;">
       <div class="navbar-brand" style="position: relative; left: 30px;top: -10px; font-size: 20px;color: black;">טיסות
         ממתינות להמראה
       </div>
       <strong style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
-        15
+        150
       </strong>
     </a>
 
     <div style="width:30px"></div>
 
-    <a  class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:85px;
+    <a class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:100%;
            border: 1.5px solid black; border-radius: 8px;
-            background: lightblue;display: flex; justify-content: center; align-items: center;" href="javascript:;">
-      <div class="navbar-brand" style="position: relative; left: 30px;top: -10px; font-size: 20px;color: black;">טיסות
+            background: lightblue;display: flex; flex-direction: column; justify-content: center; align-items: center;"
+      href="javascript:;">
+      <div class="navbar-brand" style="position: relative; font-size: 20px;color: black;">טיסות
         ממתינות להמראה
       </div>
-      <div id="BGU_temp" class="bar-chart secondary" data-total="42" animated style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
-        
+      <div id="BGU_temp" class="bar-chart secondary" data-total="42" animated
+        style="position: relative; font-weight: 400;font-size: 25px;color: black;">
+
       </div>
-      <script >
-    
-        console.log("fuck");
+      <script>
+
+        const btnFlightLands = document.getElementById("flight-lands");
+        function unix_toDate(timestamp) {
+
+          var date = new Date(timestamp * 1000);
+          // Hours part from the timestamp
+          var hours = date.getHours();
+          // Minutes part from the timestamp
+          var minutes = "0" + date.getMinutes();
+          // Seconds part from the timestamp
+          var seconds = "0" + date.getSeconds();
+
+          // Will display time in 10:30:23 format
+          var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+          return formattedTime;
+        }
+        btnFlightLands.addEventListener('click', () => {
+          if (btnFlightLands.classList.contains('open')) {
+            console.log('Yes, it does contain open, removing it.')
+            btnFlightLands.removeChild(btnFlightLands.lastChild);
+            btnFlightLands.classList.remove('open')
+          } else {
+
+            console.log('no it does not contain open! adding it')
+
+            const div = document.createElement('div')
+            div.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
+            const ul = document.createElement('ul')
+            div.appendChild(ul)
+            /*
+            Code to fetch data from redis
+            */
+            fetch('http://localhost:3000/landing')
+              .then((response) => {
+                return response;
+              })
+              .then((myJson) => {
+                var code = myJson.json();
+                code.then(value => {
+                  console.log(value);
+                document.getElementById("numbe-of-landing").innerText = value.length;
+                for (let i = 0; i < value.length; i++) {
+                  var obj = value[i];
+
+                  const li = document.createElement('li')
+                  li.style = 'color: green;font-weight: bold;';
+                  li.textContent = `(${obj['num']}) ${obj['toport']}->${obj['fromport']} ${unix_toDate(obj['scheduled_arr'])}`;
+                  // li.textContent = '(ELY315) TLV->FCO ' + unix_toDate(1658477260);
+                  ul.appendChild(li)
+                }
+              }
+                )
+              });
+
+
+            btnFlightLands.appendChild(div)
+            btnFlightLands.classList.add('open')
+
+          }
+        }
+        )
+
+        console.log("here");
         let lat = 32.321457;
         let lng = 34.853195;
         document.getElementById("BGU_temp").innerText = lat;
@@ -56,18 +122,19 @@
           responseType: 'json'
         }
         console.log();
+
       //   fetch('https://api.openweathermap.org/data/2.5/weather?appid=15fb5ab1185d5953f6ce301bf8ea131b&units=metric&lat=' + lat + '&lon=' + lng)
       // .then((response) => {
       //   return response.json();
       // })
       // .then((myJson) => {
       //   var code = myJson.cod;
-          
+
       //   console.log(myJson.cod);
       // });
-        
+
       </script>
-     
+
     </a>
 
   </nav>
