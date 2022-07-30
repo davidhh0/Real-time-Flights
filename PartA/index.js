@@ -38,6 +38,28 @@ producer.on('event.log', function(log) {
 });
 producer.connect();
 
+
+const topicall = `${prefix}mongotoredis`;
+const producerall = new Kafka.Producer(kafkaConf);
+
+
+producerall.on("ready", function(arg) {
+  console.log(`producerall ${arg.name} ready.`);
+});
+
+producerall.on("disconnected", function(arg) {
+  process.exit();
+});
+
+producerall.on('event.error', function(err) {
+  console.error(err);
+  process.exit(1);
+});
+producerall.on('event.log', function(log) {
+  // console.log(log);
+});
+producerall.connect();
+
 //------------------------------------------------
 
 var con = mysql.createConnection({
@@ -141,6 +163,7 @@ async function savetosql(flight){
 async function main() {
   await sleep(1500);
   while(true){
+    let all_flights = [];
     const DATE = await getTime();
     weatherDic = {};
 
@@ -234,9 +257,11 @@ async function main() {
         // console.log(flight);
         await savetosql(flight);
         await producer.produce(topic, -1, Buffer.from(JSON.stringify(flight)), flight.num);
+        all_flights.push(flight);
       }
     }
 
+    await producerall.produce(topicall, -1, Buffer.from(JSON.stringify(all_flights)), all_flights.length);
     console.log("Done");
     console.log("3");
     await sleep(1000);
