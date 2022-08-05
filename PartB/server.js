@@ -79,7 +79,7 @@ function filterByNotIsrael(theJson) {
   var dict = [];
   for (var i = 0; i < theJson.length; i++) {
     var obj = theJson[i];
-    if (obj['des_country'] == 'Israel') {
+    if (obj['des_country'] != 'Israel') {
       dict.push(obj);
     }
   }

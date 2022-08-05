@@ -7,8 +7,6 @@
     <script type='text/javascript' src='http://www.bing.com/api/maps/mapcontrol?callback=GetMap' async defer></script>
     <script type='text/javascript'>
         function pushpinClicked(e) {
-            console.log(e);
-            console.log();
             //Make sure the infobox has metadata to display.
             console.log("im here")
             //Set the infobox options with the metadata of the pushpin.
@@ -39,17 +37,7 @@
                         for (let i = 0; i < value.length; i++) {
                             var obj = value[i];
                             var loc = new Microsoft.Maps.Location(obj['lat'], obj['lng']);
-
-                            p2 = {
-                                x: 32.0068,
-                                y: 34.8853
-                            };
-                            //!! p2 is the destination !!
-                            p1 = {
-                                x: obj['lat'],
-                                y: obj['lng']
-                            };
-                            let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+                            let angle = obj['orientaion'];
                             var pushpin = new Microsoft.Maps.Pushpin(loc);
                             createRotatedImagePushpin(obj['num'],loc, 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pushpin) {
                                 Microsoft.Maps.Events.addHandler(pushpin, 'click', pushpinClicked);
