@@ -13,13 +13,18 @@
 
     <div id="flight-lands" class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:100%;
            border: 1.5px solid black; border-radius: 8px;
-            background: lightblue;display: flex; justify-content: center; align-items: center;cursor:pointer;">
+            background-image: url('https://media.istockphoto.com/photos/sunrise-picture-id531253600?k=20&m=531253600&s=612x612&w=0&h=Q-q9YYdHwdvWEp5dIBAcwO8e1i6Oem9yQiQhAEzqi9A=');
+            display: flex; justify-content: center; align-items: center;cursor:pointer;">
       <div
         style="position: absolute; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; align-items: center;">
-        <div style="position: relative;top: 10px; font-size: 20px;color: black;">
+        <div style="position: relative;top: 10px; font-size: 20px;
+        color: whitesmoke;
+        text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;">
           טיסות ממתינות לנחיתה
         </div>
-        <strong id="numbe-of-landing" style="position: relative; font-size: 25px;color: black;">
+        <strong id="numbe-of-landing" style="position: relative; font-size: 25px;
+        color: whitesmoke;
+        text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;">
           -
         </strong>
       </div>
@@ -29,11 +34,16 @@
 
     <div id="flight-takeoffs" class="navbar-wrapper" style="position: relative; width:32%;max-width: 300px;height:100%;
            border: 1.5px solid black; border-radius: 8px;
-            background: lightblue;display: flex; justify-content: center; align-items: center; cursor: pointer;">
-      <div class="navbar-brand" style="position: relative; left: 20px;top: -10px; font-size: 20px;color: black;">טיסות
+            background-image: url('https://media.istockphoto.com/photos/field-of-spring-grass-and-perfect-sky-picture-id1282821744?k=20&m=1282821744&s=612x612&w=0&h=72S488h8B5nf0vHRJgGtmP7Tb7kTTxy7NxtL70BpIg0=');
+            display: flex; justify-content: center; align-items: center; cursor: pointer;">
+      <div class="navbar-brand" style="position: relative; left: 20px;top: -10px; font-size: 20px;
+      color: whitesmoke;
+        text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;">טיסות
         ממתינות להמראה
       </div>
-      <strong id="numbe-of-takeoffs" style="position: relative; left: -110px;top: 18px; font-size: 25px;color: black;">
+      <strong id="numbe-of-takeoffs" style="position: relative; left: -110px;top: 18px; font-size: 25px;
+      color: whitesmoke;
+        text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;">
         -
       </strong>
     </div>
@@ -42,7 +52,8 @@
     
     <div id="weather_box" class="navbar-wrapper" style="position: relative;width:32%;max-width: 300px;height:100%;
            border: 1.5px solid black; border-radius: 8px;
-            background: lightblue;display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: url('https://media.istockphoto.com/photos/light-of-sun-and-sky-blue-or-azure-sky-and-cloud-picture-id921587648?k=20&m=921587648&s=612x612&w=0&h=Bo8LLKaZsTZRZKrYaprQ5Lm2qZ-DayVvwN_Ca4aU30M=');
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             /* background-image:url('https://www.ksnt.com/wp-content/uploads/sites/86/2016/03/sunshine_36360441_ver1.0-1.jpg'); */
             background-size: 100% 100%;
             "
@@ -111,7 +122,6 @@
                   const li = document.createElement('li')
                   li.style = 'color: green;font-weight: bold;';
                   li.textContent = `(${obj['num']}) ${obj['toport']}->${obj['fromport']} ${unix_toDate(obj['scheduled_arr'])}`;
-                  // li.textContent = '(ELY315) TLV->FCO ' + unix_toDate(1658477260);
                   ul.appendChild(li)
                 }
               }

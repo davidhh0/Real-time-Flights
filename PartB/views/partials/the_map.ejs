@@ -22,8 +22,10 @@
             var map = new Microsoft.Maps.Map('#myMap', {
                 credentials: 'AmGGEcxxukm2TTJsvwQr2bBybgLf69ARx-ZLlE9QyJIlfqVd-STwIkjSpBt5fZq6'
             });
-            infobox = new Microsoft.Maps.Infobox( {
-                visible: false
+            var center = map.getCenter();
+            infobox = new Microsoft.Maps.Infobox(center, {
+                visible: false,
+                
             });
             infobox.setMap(map);
             fetch('http://localhost:3000/landing')
@@ -31,9 +33,9 @@
                     return response;
                 })
                 .then((myJson) => {
+                    
                     var code = myJson.json();
                     code.then(value => {
-                        //console.log(value);
                         for (let i = 0; i < value.length; i++) {
                             var obj = value[i];
                             var loc = new Microsoft.Maps.Location(obj['lat'], obj['lng']);
