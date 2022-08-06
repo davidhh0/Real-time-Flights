@@ -2,8 +2,31 @@
 const express = require('express')
 const app = express();
 const socketIO = require('socket.io');
-const redis = require("socket.io-redis");
+// const redis = require("socket.io-redis");
 const fs = require('fs');
+
+
+const server = express()
+  .use(app)
+  .listen(3000, () => console.log(`Listening Socket on http://localhost:3000`));
+const io = socketIO(server);
+
+app.get('/setData/:districtId/:value', function (req, res) {
+  io.emit('newdata', { districtId: req.params.districtId, value: req.params.value })
+  res.send(req.params.value)
+})
+
+
+//------------
+// io.on('connection', (socket) => {  
+//   socket.on('newdata', (msg) => {
+//     console.log(msg);
+//     io.emit('newdata', msg);
+//   });
+// });
+//-----------
+
+
 
 const Kafka = require("node-rdkafka");
 
@@ -35,7 +58,9 @@ consumer.on("ready", function (arg) {
 });
 consumer.on("data", function (m) {
   var ob = JSON.parse(m.value.toString());
-  console.log(ob);
+  //console.log(ob);
+  io.emit('newdata', { theData: ob })
+
 });
 consumer.on("disconnected", function (arg) {
   process.exit();
@@ -106,6 +131,8 @@ app.get('/takeoff', (req, res) => {
 )
 
 
+
+
 app.get('/landing', (req, res) => {
   fs.readFile('/home/david/Documents/base64.txt', 'utf8', (err, data) => {
     if (err) {
@@ -125,23 +152,5 @@ app.get('/landing', (req, res) => {
 )
 
 
-app.get('/setData/:districtId/:value', function (req, res) {
-  io.emit('newdata', { districtId: req.params.districtId, value: req.params.value })
-  res.send(req.params.value)
-})
 
-
-const server = express()
-  .use(app)
-  .listen(3000, () => console.log(`Listening Socket on http://localhost:3000`));
-const io = socketIO(server);
-
-//------------
-// io.on('connection', (socket) => {  
-//   socket.on('newdata', (msg) => {
-//     console.log(msg);
-//     io.emit('newdata', msg);
-//   });
-// });
-//-----------
 
