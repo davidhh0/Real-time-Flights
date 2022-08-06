@@ -73,10 +73,13 @@
       <div style="position: relative;left: 20%;bottom: 98%;font-size: 15px;">
         Ben Gurion Airport(TLV)
       </div>
+      <script src="/socket.io/socket.io.js"></script>
       <script>
 
         const btnFlightLands = document.getElementById("flight-lands");
         const btnFlightTakeoffs = document.getElementById("flight-takeoffs");
+        let divForLanding = document.createElement('div');
+        let divForTakeoff = document.createElement('div');
         function unix_toDate(timestamp) {
 
           var date = new Date(timestamp * 1000);
@@ -91,91 +94,82 @@
           var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
           return formattedTime;
         }
+        
+        var socket = io.connect();
+        socket.on('landing', function (msg) {
+          let value = msg['theData'];
+          try{
+          divForLanding.removeChild(divForLanding.lastChild);
+          } catch(error){
+            console.log('BITCH' + error);
+          }
+          
+          divForLanding.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
+          const ul = document.createElement('ul')
+          divForLanding.appendChild(ul);
+          document.getElementById("numbe-of-landing").innerText = value.length;
+          for (let i = 0; i < value.length; i++) {
+            var obj = value[i];
+            
+            const li = document.createElement('li')
+            li.style = 'color: green;font-weight: bold;';
+            li.textContent = `(${obj['num']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
+            ul.appendChild(li)
+          }
+
+        });
+        
+        socket.on('takeoff', function (msg) {
+          let value = msg['theData'];
+          try{
+            divForTakeoff.removeChild(divForTakeoff.lastChild);
+          } catch(error){
+            console.log('BITCH' + error);
+          }
+          
+          divForTakeoff.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
+          const ul = document.createElement('ul')
+          divForTakeoff.appendChild(ul);
+          document.getElementById("numbe-of-takeoffs").innerText = value.length;
+          for (let i = 0; i < value.length; i++) {
+            var obj = value[i];
+            
+            const li = document.createElement('li')
+            
+            console.log(obj);
+          
+            li.style = 'color: green;font-weight: bold;';
+            li.textContent = `(${obj['num']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
+            ul.appendChild(li)
+          }
+
+        });
+
         btnFlightLands.addEventListener('click', () => {
           if (btnFlightLands.classList.contains('open')) {
+
             console.log('Yes, it does contain open, removing it.')
             btnFlightLands.removeChild(btnFlightLands.lastChild);
             btnFlightLands.classList.remove('open')
+
           } else {
-
-            console.log('no it does not contain open! adding it')
-
-            const div = document.createElement('div')
-            div.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
-            const ul = document.createElement('ul')
-            div.appendChild(ul)
-            /*
-            Code to fetch data from redis
-            */
-            fetch('http://localhost:3000/landing')
-              .then((response) => {
-                return response;
-              })
-              .then((myJson) => {
-                var code = myJson.json();
-                code.then(value => {
-                  console.log(value);
-                document.getElementById("numbe-of-landing").innerText = value.length;
-                for (let i = 0; i < value.length; i++) {
-                  var obj = value[i];
-
-                  const li = document.createElement('li')
-                  li.style = 'color: green;font-weight: bold;';
-                  li.textContent = `(${obj['num']}) ${obj['toport']}->${obj['fromport']} ${unix_toDate(obj['scheduled_arr'])}`;
-                  ul.appendChild(li)
-                }
-              }
-                )
-              });
-
-
-            btnFlightLands.appendChild(div)
-            btnFlightLands.classList.add('open')
-
+            console.log('no it does not contain open! adding it');
+            btnFlightLands.appendChild(divForLanding);
+            btnFlightLands.classList.add('open');
           }
         }
         )
 
         btnFlightTakeoffs.addEventListener('click', () => {
           if (btnFlightTakeoffs.classList.contains('open')) {
-            console.log('Yes, it does contain open, removing it.')
+            console.log('Yes, it does contain open, removing it.');
             btnFlightTakeoffs.removeChild(btnFlightTakeoffs.lastChild);
-            btnFlightTakeoffs.classList.remove('open')
+            btnFlightTakeoffs.classList.remove('open');
           } else {
-
-            console.log('no it does not contain open! adding it')
-
-            const div = document.createElement('div')
-            div.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
-            const ul = document.createElement('ul')
-            div.appendChild(ul)
-            /*
-            Code to fetch data from redis
-            */
-            fetch('http://localhost:3000/takeoff')
-              .then((response) => {
-                return response;
-              })
-              .then((myJson) => {
-                var code = myJson.json();
-                code.then(value => {
-                  console.log(value);
-                document.getElementById("numbe-of-takeoffs").innerText = value.length;
-                for (let i = 0; i < value.length; i++) {
-                  var obj = value[i];
-
-                  const li = document.createElement('li')
-                  li.style = 'color: green;font-weight: bold;';
-                  li.textContent = `(${obj['num']}) ${obj['toport']}->${obj['fromport']} ${unix_toDate(obj['scheduled_arr'])}`;
-                  ul.appendChild(li)
-                }
-              }
-                )
-              });
-
-
-            btnFlightTakeoffs.appendChild(div)
-            btnFlightTakeoffs.classList.add('open')
+            console.log('no it does not contain open! adding it');
+            
+            btnFlightTakeoffs.appendChild(divForTakeoff);
+            btnFlightTakeoffs.classList.add('open');
 
           }
         }

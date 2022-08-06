@@ -4,6 +4,10 @@ const app = express();
 const socketIO = require('socket.io');
 // const redis = require("socket.io-redis");
 const fs = require('fs');
+const redis = require('redis');
+const client = redis.createClient();
+client.connect();
+
 
 
 const server = express()
@@ -17,14 +21,6 @@ app.get('/setData/:districtId/:value', function (req, res) {
 })
 
 
-//------------
-// io.on('connection', (socket) => {  
-//   socket.on('newdata', (msg) => {
-//     console.log(msg);
-//     io.emit('newdata', msg);
-//   });
-// });
-//-----------
 
 
 
@@ -58,8 +54,11 @@ consumer.on("ready", function (arg) {
 });
 consumer.on("data", function (m) {
   var ob = JSON.parse(m.value.toString());
-  //console.log(ob);
-  io.emit('newdata', { theData: ob })
+  console.log('RECEIVED DATA FROM KAFKA !!!');
+  io.emit('newdata', { theData:ob });
+  io.emit('landing' , {theData: filterByIsrael(ob)});
+  io.emit('takeoff', {theData:filterByNotIsrael(ob)});
+
 
 });
 consumer.on("disconnected", function (arg) {
@@ -104,7 +103,7 @@ function filterByNotIsrael(theJson) {
   var dict = [];
   for (var i = 0; i < theJson.length; i++) {
     var obj = theJson[i];
-    if (obj['des_country'] != 'Israel') {
+    if (obj['fromport'] == 'TLV'  && obj['isground'] == 1) {
       dict.push(obj);
     }
   }

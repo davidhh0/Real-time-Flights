@@ -5,6 +5,8 @@
     <title></title>
     <meta charset="utf-8" />
     <script type='text/javascript' src='http://www.bing.com/api/maps/mapcontrol?callback=GetMap' async defer></script>
+    <script src="/socket.io/socket.io.js"></script>
+
     <script type='text/javascript'>
         function pushpinClicked(e) {
             //Make sure the infobox has metadata to display.
@@ -28,29 +30,25 @@
                 
             });
             infobox.setMap(map);
-            fetch('http://localhost:3000/landing')
-                .then((response) => {
-                    return response;
-                })
-                .then((myJson) => {
-                    
-                    var code = myJson.json();
-                    code.then(value => {
-                        for (let i = 0; i < value.length; i++) {
-                            var obj = value[i];
-                            var loc = new Microsoft.Maps.Location(obj['lat'], obj['lng']);
-                            let angle = obj['orientaion'];
-                            var pushpin = new Microsoft.Maps.Pushpin(loc);
-                            createRotatedImagePushpin(obj['num'],loc, 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pushpin) {
-                                Microsoft.Maps.Events.addHandler(pushpin, 'click', pushpinClicked);
-                                map.entities.push(pushpin);
-                            });
+            var socket = io.connect();
+            socket.on('newdata', function (msg) {
+                map.entities.clear();
+                console.log(msg['theData']);
+                let value = msg['theData'];
+                for (let i = 0; i < value.length; i++) {
+                    var obj = value[i];
+                    var loc = new Microsoft.Maps.Location(obj['lat'], obj['lng']);
+                    let angle = obj['orientaion'];
+                    var pushpin = new Microsoft.Maps.Pushpin(loc);
+                    createRotatedImagePushpin(obj['num'],loc, 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pushpin) {
+                        Microsoft.Maps.Events.addHandler(pushpin, 'click', pushpinClicked);
+                        map.entities.push(pushpin);
+                    });
 
                         }
-
-                    }
-                    )
-                });
+                
+            })
+            
 
         }
 
@@ -102,6 +100,7 @@
         }
 
     </script>
+    
 </head>
 
 <body>

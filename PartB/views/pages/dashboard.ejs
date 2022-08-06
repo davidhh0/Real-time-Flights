@@ -14,21 +14,9 @@ The above copyright notice and this permission notice shall be included in all c
 
 <head>
   <%- include("../partials/headers") %>
-    <!--ariel ws-->
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-      var socket = io.connect();
-      function setWs() {
-        socket.on('newdata', function (msg) {
-          var element = document.getElementById(msg.districtId);
-          element.innerText = msg.value;
-        })
-      }
-    </script>
-    <!--ariel ws -->
 </head>
 
-<body class="" onload="setWs()">
+<body class="">
   <div class="wrapper ">
     <div class="content"
       style="height: 100%;display: flex; flex-direction: column;align-items: center;justify-content: flex-start;">
