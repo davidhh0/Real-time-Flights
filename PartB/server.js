@@ -2,7 +2,6 @@
 const express = require('express')
 const app = express();
 const socketIO = require('socket.io');
-// const redis = require("socket.io-redis");
 const fs = require('fs');
 const redis = require('redis');
 const client = redis.createClient();
@@ -20,7 +19,12 @@ app.get('/setData/:districtId/:value', function (req, res) {
   res.send(req.params.value)
 })
 
-
+function insert_to_redis(data){
+  for (var i = 0; i < data.length; i++) {
+      var key = data[i]['id']
+      client.set(key,JSON.stringify(data[i]));
+  }
+}
 
 
 
@@ -43,7 +47,6 @@ const topics = [`${prefix}mongotoredis`];
 const consumer = new Kafka.KafkaConsumer(kafkaConf, {
   "auto.offset.reset": "beginning"
 });
-
 consumer.on("error", function (err) {
   console.error(err);
 });
@@ -55,9 +58,11 @@ consumer.on("ready", function (arg) {
 consumer.on("data", function (m) {
   var ob = JSON.parse(m.value.toString());
   console.log('RECEIVED DATA FROM KAFKA !!!');
+  
   io.emit('newdata', { theData:ob });
   io.emit('landing' , {theData: filterByIsrael(ob)});
   io.emit('takeoff', {theData:filterByNotIsrael(ob)});
+  insert_to_redis(ob);
 
 
 });
@@ -75,6 +80,12 @@ consumer.connect();
 
 
 const port = 3000;
+
+io.on('connection', socket => {
+  socket.on('redis_get_info', data => {
+    console.log('hey', data);
+  });
+});
 
 app.use(express.static('public'))
 

@@ -7,8 +7,20 @@
     <script type='text/javascript' src='http://www.bing.com/api/maps/mapcontrol?callback=GetMap' async defer></script>
     <script src="/socket.io/socket.io.js"></script>
 
-    <script type='text/javascript'>
+    <script type='text/javascript' >
         function pushpinClicked(e) {
+            
+
+            const socket = io();
+            
+            socket.on('connect', () => {
+            console.log("redis im here bitch");
+            socket.emit('redis_get_info', { 'key':e.target.metadata.title }); 
+            });
+
+            
+
+
             //Make sure the infobox has metadata to display.
             console.log("im here")
             //Set the infobox options with the metadata of the pushpin.
@@ -16,7 +28,8 @@
                 location: e.target.getLocation(),
                 title: e.target.metadata.title,
                 description: e.target.metadata.description,
-                visible: true
+                visible: true,
+                maxWidth:340
             });
 
         }
@@ -39,8 +52,10 @@
                     var obj = value[i];
                     var loc = new Microsoft.Maps.Location(obj['lat'], obj['lng']);
                     let angle = obj['orientaion'];
-                    var pushpin = new Microsoft.Maps.Pushpin(loc);
-                    createRotatedImagePushpin(obj['num'],loc, 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pushpin) {
+                    var pushpin = new Microsoft.Maps.Pushpin(loc,{
+                        maxWidth:330
+                    });
+                    createRotatedImagePushpin(obj,loc, 'https://i.ibb.co/FWyC5Yz/airplane-mode-1.png', angle, function (pushpin) {
                         Microsoft.Maps.Events.addHandler(pushpin, 'click', pushpinClicked);
                         map.entities.push(pushpin);
                     });
@@ -52,7 +67,7 @@
 
         }
 
-        function createRotatedImagePushpin(flightnum,location, url, rotationAngle, callback) {
+        function createRotatedImagePushpin(obj,location, url, rotationAngle, callback) {
             var img = new Image();
             img.onload = function () {
                 var c = document.createElement('canvas');
@@ -76,9 +91,14 @@
                     anchor: new Microsoft.Maps.Point(c.width / 2, c.height / 2) //Anchor to center of image.
 
                 });
+
+                
+               
                 pin.metadata = {
-                    title: 'BLah blah',
-                    description: flightnum
+                    title: obj['sign'],
+                    description: '(' + (obj.fromport || '') + ') '+(obj.ori_city)+', '+ (obj.ori_country) +
+                        '→ ('+
+                      (obj.toport || '')  + ') '+ (obj.des_city || '') + ', ' + (obj.des_country || '')
                 };
 
 

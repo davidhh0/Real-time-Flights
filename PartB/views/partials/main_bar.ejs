@@ -113,7 +113,7 @@
             
             const li = document.createElement('li')
             li.style = 'color: green;font-weight: bold;';
-            li.textContent = `(${obj['num']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
+            li.textContent = `(${obj['sign']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
             ul.appendChild(li)
           }
 
@@ -139,7 +139,7 @@
             console.log(obj);
           
             li.style = 'color: green;font-weight: bold;';
-            li.textContent = `(${obj['num']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
+            li.textContent = `(${obj['sign']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
             ul.appendChild(li)
           }
 
