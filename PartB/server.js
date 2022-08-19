@@ -8,6 +8,23 @@ const client = redis.createClient();
 client.connect();
 
 
+let redis_value = '{}';
+
+
+
+async function get_redis_value(key){
+    const value =  client.get(key);
+
+await value.then((response) =>{
+    redis_value = response;
+});
+}
+
+async function aux_redis_value(key){
+    await get_redis_value(key);
+}
+
+
 
 const server = express()
   .use(app)
@@ -21,7 +38,7 @@ app.get('/setData/:districtId/:value', function (req, res) {
 
 function insert_to_redis(data){
   for (var i = 0; i < data.length; i++) {
-      var key = data[i]['id']
+      var key = data[i]['sign']
       client.set(key,JSON.stringify(data[i]));
   }
 }
@@ -83,7 +100,9 @@ const port = 3000;
 
 io.on('connection', socket => {
   socket.on('redis_get_info', data => {
-    console.log('hey', data);
+    aux_redis_value(data['key']);
+    //console.log('hey', redis_value);
+    io.emit('redis_receive_info',JSON.parse(redis_value));
   });
 });
 
@@ -120,47 +139,5 @@ function filterByNotIsrael(theJson) {
   }
   return dict;
 }
-
-
-app.get('/takeoff', (req, res) => {
-  fs.readFile('/home/david/Documents/base64.txt', 'utf8', (err, data) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    let buff = new Buffer(data, 'base64');
-    let text = buff.toString('ascii');
-    let theJson = JSON.parse(text)
-    console.log("GET ---> LANDING");
-    var landingFlights = filterByNotIsrael(theJson)
-    res.send(landingFlights);
-
-  });
-
-}
-)
-
-
-
-
-app.get('/landing', (req, res) => {
-  fs.readFile('/home/david/Documents/base64.txt', 'utf8', (err, data) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    let buff = new Buffer(data, 'base64');
-    let text = buff.toString('ascii');
-    let theJson = JSON.parse(text)
-    console.log("GET ---> LANDING");
-    var landingFlights = filterByIsrael(theJson)
-    res.send(landingFlights);
-
-  });
-
-}
-)
-
-
 
 

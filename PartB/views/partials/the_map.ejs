@@ -14,11 +14,16 @@
             const socket = io();
             
             socket.on('connect', () => {
-            console.log("redis im here bitch");
-            socket.emit('redis_get_info', { 'key':e.target.metadata.title }); 
+                console.log("redis im here bitch");
+                socket.emit('redis_get_info', { 'key':e.target.metadata.title }); 
             });
 
-            
+            socket.on('redis_receive_info', function (msg) {
+                var description =  '(' + (msg.fromport || '') + ') '+(msg.ori_city)+', '+ (msg.ori_country) +
+                        '→ ('+
+                      (msg.toport || '')  + ') '+ (msg.des_city || '') + ', ' + (msg.des_country || '')
+                console.log("THE DESC: " + description);
+            });    
 
 
             //Make sure the infobox has metadata to display.
@@ -93,7 +98,6 @@
                 });
 
                 
-               
                 pin.metadata = {
                     title: obj['sign'],
                     description: '(' + (obj.fromport || '') + ') '+(obj.ori_city)+', '+ (obj.ori_country) +
