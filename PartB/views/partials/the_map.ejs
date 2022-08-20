@@ -9,7 +9,7 @@
 
     <script type='text/javascript' >
         function pushpinClicked(e) {
-            
+            // lat & long & speed & plane type & airline name & real_dep + (ori_offset) & estimated_arr + des_offset
 
             const socket = io();
             
@@ -22,7 +22,8 @@
                 var description =  '(' + (msg.fromport || '') + ') '+(msg.ori_city)+', '+ (msg.ori_country) +
                         '→ ('+
                       (msg.toport || '')  + ') '+ (msg.des_city || '') + ', ' + (msg.des_country || '')
-                console.log("THE DESC: " + description);
+                
+                      console.log("THE DESC: " + description);
             });    
 
 
@@ -102,7 +103,10 @@
                     title: obj['sign'],
                     description: '(' + (obj.fromport || '') + ') '+(obj.ori_city)+', '+ (obj.ori_country) +
                         '→ ('+
-                      (obj.toport || '')  + ') '+ (obj.des_city || '') + ', ' + (obj.des_country || '')
+                      (obj.toport || '')  + ') '+ (obj.des_city || '') + ', ' + (obj.des_country || '') +
+                      '\n Longitude & Latitude: ' +(obj.lng || '') + ', ' + (obj.lat)
+                      + ' Speed: ' + (obj.speed || '')
+                      +'\n Airline: ' + (obj.airlinename)
                 };
 
 

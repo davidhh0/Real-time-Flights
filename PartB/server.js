@@ -1,30 +1,61 @@
-
 const express = require('express')
 const app = express();
 const socketIO = require('socket.io');
 const fs = require('fs');
 const redis = require('redis');
 const client = redis.createClient();
+const bigml = require('bigml');
+
+
+
 client.connect();
 
 
 let redis_value = '{}';
+var connection = new bigml.BigML('flightpro2022', '3564af0744fe46d9aa38f42e2d54028b3d42910c');
+var prediction = new bigml.Prediction(connection);
 
+// ====
+async function getPrediction(){
+  let modelInfo = await client.get('model_info');
+  modelInfo = JSON.parse(modelInfo);
+  let pred = '';
+  // extraLate , normal , Late 
+
+  let v = prediction.createAndWait(modelInfo, {"period": "Summer",  "month": 7,  "dayofweek": "Thursday",  
+  "airlinename": "European Air Charter",  "ori_country": "Israel", 
+  "des_country": "Bulgaria",  "distancetype": "short",  "ori_weather": 31.57,  "des_weather": 27.9}
+
+  // function (error, result) {
+  // if (!error && result)
+  //      pred = (result.object.output);
+  // }
+  );
+ 
+  return v;
+  
+  
+  //console.log(predict.object.output);
+  
+
+}
+
+
+let v = getPrediction()
 
 
 async function get_redis_value(key){
     const value =  client.get(key);
 
 await value.then((response) =>{
-    redis_value = response;
+
+  redis_value = response;
+    
 });
 }
-
 async function aux_redis_value(key){
     await get_redis_value(key);
 }
-
-
 
 const server = express()
   .use(app)
@@ -64,37 +95,79 @@ const topics = [`${prefix}mongotoredis`];
 const consumer = new Kafka.KafkaConsumer(kafkaConf, {
   "auto.offset.reset": "beginning"
 });
+const consumer_modelinfo = new Kafka.KafkaConsumer(kafkaConf, {
+  "auto.offset.reset": "beginning"
+});
+
+consumer_modelinfo.on("error", function (err) {
+  console.error(err);
+});
 consumer.on("error", function (err) {
   console.error(err);
+});
+
+consumer_modelinfo.on("ready", function (arg) {
+  console.log(`Consumer ${arg.name} ready`);
+  consumer_modelinfo.subscribe([prefix+'modelinfo']);
+  consumer_modelinfo.consume();
 });
 consumer.on("ready", function (arg) {
   console.log(`Consumer ${arg.name} ready`);
   consumer.subscribe(topics);
   consumer.consume();
 });
+
+// ==
+
+
 consumer.on("data", function (m) {
   var ob = JSON.parse(m.value.toString());
   console.log('RECEIVED DATA FROM KAFKA !!!');
-  
   io.emit('newdata', { theData:ob });
   io.emit('landing' , {theData: filterByIsrael(ob)});
   io.emit('takeoff', {theData:filterByNotIsrael(ob)});
   insert_to_redis(ob);
-
-
 });
+consumer_modelinfo.on("data", function (m) {
+  console.log('RECEIVED DATA model info!@#!@!@# !!!');
+  var ob = JSON.parse(m.value.toString());
+  client.set('model_info',JSON.stringify(ob));
+  console.log(ob);
+  
+});
+
+// ==
+
 consumer.on("disconnected", function (arg) {
   process.exit();
 });
+
+consumer_modelinfo.on("disconnected", function (arg) {
+  process.exit();
+});
+
+
 consumer.on('event.error', function (err) {
   console.error(err);
   process.exit(1);
 });
+
+consumer_modelinfo.on('event.error', function (err) {
+  console.error(err);
+  process.exit(1);
+});
+
+
+
 consumer.on('event.log', function (log) {
   //   console.log(log);
 });
-consumer.connect();
 
+consumer_modelinfo.on('event.log', function (log) {
+  //   console.log(log);
+});
+consumer.connect();
+consumer_modelinfo.connect();
 
 const port = 3000;
 
@@ -123,6 +196,8 @@ function filterByIsrael(theJson) {
   for (var i = 0; i < theJson.length; i++) {
     var obj = theJson[i];
     if (obj['des_country'] == 'Israel') {
+      let pred = getPrediction();
+      console.log(pred);
       dict.push(obj);
     }
   }
