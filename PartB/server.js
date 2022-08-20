@@ -22,22 +22,16 @@ async function getPrediction(){
   let pred = '';
   // extraLate , normal , Late 
 
-  let v = prediction.createAndWait(modelInfo, {"period": "Summer",  "month": 7,  "dayofweek": "Thursday",  
+  prediction.createAndWait(modelInfo, {"period": "Summer",  "month": 7,  "dayofweek": "Thursday",  
   "airlinename": "European Air Charter",  "ori_country": "Israel", 
-  "des_country": "Bulgaria",  "distancetype": "short",  "ori_weather": 31.57,  "des_weather": 27.9}
-
-  // function (error, result) {
-  // if (!error && result)
-  //      pred = (result.object.output);
-  // }
+  "des_country": "Bulgaria",  "distancetype": "short",  "ori_weather": 31.57,  "des_weather": 27.9},
+  function (error, result) {
+  if (!error && result)
+       pred = result.object.output;
+  }
   );
- 
-  return v;
-  
-  
-  //console.log(predict.object.output);
-  
-
+  while (pred == ''){}
+  return pred;
 }
 
 
