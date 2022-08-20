@@ -62,17 +62,17 @@ producerall.connect();
 
 //------------------------------------------------
 
-// var con = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "password",
-//   database: "data"
-// });
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "password",
+  database: "data"
+});
 
-// con.connect(function(err) {
-//   if (err) throw err;
-//   console.log("Connected!");
-// });
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
 
 //------------------------------------------------
 
@@ -255,7 +255,7 @@ async function main() {
         flight.month = DATE[2];
 
         // console.log(flight);
-        // await savetosql(flight);
+        await savetosql(flight);
         await producer.produce(topic, -1, Buffer.from(JSON.stringify(flight)), flight.num);
         all_flights.push(flight);
       }

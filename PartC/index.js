@@ -21,6 +21,26 @@ const kafkaConf = {
 
 const prefix = "el6ggtvk-";
 
+const topic = `${prefix}modelinfo`;
+const producer = new Kafka.Producer(kafkaConf);
+
+producer.on("ready", function(arg) {
+  console.log(`producer ${arg.name} ready.`);
+});
+
+producer.on("disconnected", function(arg) {
+  process.exit();
+});
+
+producer.on('event.error', function(err) {
+  console.error(err);
+  process.exit(1);
+});
+producer.on('event.log', function(log) {
+//   console.log(log);
+});
+producer.connect();
+
 var connection = new bigml.BigML('flightpro2022', '3564af0744fe46d9aa38f42e2d54028b3d42910c');
 
 function getEssential(obj) {
@@ -88,6 +108,9 @@ function createModel(){
             var model = new bigml.Model(connection);
             model.create(datasetInfo, function (error, modelInfo) {
               if (!error && modelInfo) {
+                console.log(JSON.stringify(modelInfo));
+                producer.produce(topic, -1, Buffer.from(JSON.stringify(modelInfo)), "modelinfo");
+
                 // var prediction = new bigml.Prediction(connection);
                 // prediction.create(modelInfo, {"period": "Summer",  "month": 7,  "dayofweek": "Thursday",  "airlinename": "European Air Charter",  "ori_country": "Israel",  "des_country": "Bulgaria",  "distancetype": "short",  "ori_weather": 31.57,  "des_weather": 27.9}, function (error, result) {
                 //   if (!error && result)
@@ -123,7 +146,7 @@ function sleep(millis) {
 }
 
 async function main(){
-  var flag = true;
+  var flag = false;
   if (flag) {
     const topics = [`${prefix}sqltomongo`];
     const consumer = new Kafka.KafkaConsumer(kafkaConf, {
