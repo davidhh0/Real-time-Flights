@@ -14,28 +14,33 @@ client.connect();
 let redis_value = '{}';
 var connection = new bigml.BigML('flightpro2022', '3564af0744fe46d9aa38f42e2d54028b3d42910c');
 var prediction = new bigml.Prediction(connection);
+function sleep(millis) {
+  return new Promise(resolve => setTimeout(resolve, millis));
+}
+
 
 // ====
-async function getPrediction(){
+async function getPrediction(json){
   let modelInfo = await client.get('model_info');
-  modelInfo = JSON.parse(modelInfo);
-  let pred = '';
-  // extraLate , normal , Late 
+//  let modelInfo = "{\"code\":201,\"object\":{\"boosted_ensemble\":false,\"boosting\":{},\"category\":0,\"cluster\":null,\"cluster_status\":false,\"code\":201,\"columns\":11,\"configuration\":null,\"configuration_status\":false,\"created\":\"2022-08-20T16:13:03.558962\",\"creator\":\"flightpro2022\",\"dataset\":\"dataset/6301080b969fe93080001027\",\"dataset_field_types\":{\"categorical\":7,\"datetime\":0,\"image\":0,\"items\":0,\"numeric\":3,\"path\":0,\"preferred\":8,\"regions\":0,\"text\":1,\"total\":11},\"dataset_status\":true,\"depth_threshold\":512,\"description\":\"\",\"ensemble\":false,\"ensemble_id\":\"\",\"ensemble_index\":0,\"excluded_fields\":[],\"fields_meta\":{\"count\":0,\"limit\":1000,\"offset\":0,\"total\":0},\"focus_field\":null,\"input_fields\":[],\"locale\":\"en-US\",\"max_columns\":11,\"max_rows\":340,\"missing_splits\":false,\"model\":{\"depth_threshold\":512,\"kind\":\"mtree\",\"node_threshold\":512},\"name\":\"bigmlData\",\"name_options\":\"512-node, deterministic order\",\"node_threshold\":512,\"number_of_batchpredictions\":0,\"number_of_evaluations\":0,\"number_of_predictions\":0,\"number_of_public_predictions\":0,\"objective_field\":null,\"objective_field_name\":null,\"objective_field_type\":null,\"optiml\":null,\"optiml_status\":false,\"ordering\":0,\"out_of_bag\":false,\"price\":0,\"private\":true,\"project\":null,\"randomize\":false,\"range\":null,\"replacement\":false,\"resource\":\"model/6301080f56870924a8000d08\",\"rows\":340,\"sample_rate\":1,\"shared\":false,\"size\":26544,\"source\":\"source/63010807bf85ee1257000ccb\",\"source_status\":true,\"split_candidates\":32,\"split_field\":null,\"status\":{\"code\":1,\"message\":\"The model creation request has been queued and will be processed soon\",\"progress\":0},\"subscription\":false,\"support_threshold\":0,\"tags\":[],\"type\":0,\"updated\":\"2022-08-20T16:13:03.558993\",\"white_box\":false},\"resource\":\"model/6301080f56870924a8000d08\",\"location\":\"https://bigml.io/andromeda/model/\",\"error\":null}"
 
-  prediction.createAndWait(modelInfo, {"period": "Summer",  "month": 7,  "dayofweek": "Thursday",  
-  "airlinename": "European Air Charter",  "ori_country": "Israel", 
-  "des_country": "Bulgaria",  "distancetype": "short",  "ori_weather": 31.57,  "des_weather": 27.9},
+   modelInfo = JSON.parse(modelInfo);
+   let pred = '';
+  // // extraLate , normal , late 
+
+  prediction.create(modelInfo, json,
   function (error, result) {
-  if (!error && result)
-       pred = result.object.output;
+  if (!error && result){
+      pred = result.object.output;
+  }
   }
   );
-  while (pred == ''){}
+  await sleep(3000);
+  
   return pred;
 }
 
 
-let v = getPrediction()
 
 
 async function get_redis_value(key){
@@ -71,6 +76,7 @@ function insert_to_redis(data){
 
 
 const Kafka = require("node-rdkafka");
+const { ConnectionClosedEvent } = require('mongodb');
 
 const kafkaConf = {
   "group.id": "cloudkarafka-example",
@@ -114,11 +120,11 @@ consumer.on("ready", function (arg) {
 // ==
 
 
-consumer.on("data", function (m) {
+consumer.on("data", async function (m) {
   var ob = JSON.parse(m.value.toString());
   console.log('RECEIVED DATA FROM KAFKA !!!');
   io.emit('newdata', { theData:ob });
-  io.emit('landing' , {theData: filterByIsrael(ob)});
+  io.emit('landing' , {theData: await filterByIsrael(ob)});
   io.emit('takeoff', {theData:filterByNotIsrael(ob)});
   insert_to_redis(ob);
 });
@@ -185,13 +191,26 @@ app.get('/', (req, res) => {
   res.render("pages/dashboard")
 })
 
-function filterByIsrael(theJson) {
+/*
+{"period": "Summer",  "month": 7,  "dayofweek": "Thursday",  
+  "airlinename": "European Air Charter",  "ori_country": "Israel", 
+  "des_country": "Bulgaria",  "distancetype": "short",  "ori_weather": 31.57,  "des_weather": 27.9}
+*/
+
+// normal, late, extraLate
+
+async function filterByIsrael(theJson) {
   var dict = [];
+  
   for (var i = 0; i < theJson.length; i++) {
     var obj = theJson[i];
     if (obj['des_country'] == 'Israel') {
-      let pred = getPrediction();
-      console.log(pred);
+      let v = await getPrediction( {'period':obj['period'] , 'month': obj['month'],'dayofweek':obj['dayofweek'] ,
+                         'airlinename':obj['airlinename'],'ori_country':obj['ori_country'],
+                          'des_country':obj['des_country'],'distancetype':obj['distancetype'],
+                        'ori_weather':obj['ori_weather'], 'des_weather':obj['des_weather']  })
+      obj['pred'] = v;
+      console.log(v);
       dict.push(obj);
     }
   }

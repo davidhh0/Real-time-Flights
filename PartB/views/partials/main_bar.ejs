@@ -101,7 +101,7 @@
           try{
           divForLanding.removeChild(divForLanding.lastChild);
           } catch(error){
-            console.log('BITCH' + error);
+            console.log( error);
           }
           
           divForLanding.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
@@ -110,9 +110,18 @@
           document.getElementById("numbe-of-landing").innerText = value.length;
           for (let i = 0; i < value.length; i++) {
             var obj = value[i];
-            
+            let color;
+            if (obj['pred'] == 'extraLate'){
+              color = 'red';
+            }
+            else if (obj['pred'] == 'late'){
+              color = 'orange';
+            }
+            else{
+              color = 'green'
+            }
             const li = document.createElement('li')
-            li.style = 'color: green;font-weight: bold;';
+            li.style = `color: ${color};font-weight: bold;`;
             li.textContent = `(${obj['sign']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
             ul.appendChild(li)
           }
@@ -124,7 +133,7 @@
           try{
             divForTakeoff.removeChild(divForTakeoff.lastChild);
           } catch(error){
-            console.log('BITCH' + error);
+            console.log(error);
           }
           
           divForTakeoff.style = 'width: 100%; height: auto; background-color: white; border: 1px solid black; border-radius: 10px; z-index:2; position: absolute; top: 100%';
@@ -136,9 +145,7 @@
             
             const li = document.createElement('li')
             
-            console.log(obj);
-          
-            li.style = 'color: green;font-weight: bold;';
+            li.style = 'color: black;font-weight: bold;';
             li.textContent = `(${obj['sign']}) ${obj['fromport']}->${obj['toport']} ${unix_toDate(obj['scheduled_arr'])}`;
             ul.appendChild(li)
           }
